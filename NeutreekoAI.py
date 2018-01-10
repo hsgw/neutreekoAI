@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 import Neutreeko as Neu
-from copy import deepcopy
 import random, time
 
 class NeutreekoAI:
@@ -66,13 +65,11 @@ class NeutreekoAI:
 
     def _myTurn(self, pieces, moves, depth):
         if depth == 0:
-            return self._evaluteValue(pieces), [], 1
+            return self._evaluteValue(pieces)*depth, [], 1
 
         initialValue = self._evaluteValue(pieces)
-        if initialValue == self.VALUE_WON:
-            return self.VALUE_MAX, [], 1
-        elif initialValue == self.VALUE_LOSE:
-            return self.VALUE_MIN, [], 1
+        if initialValue != self.VALUE_CONTINUE:
+            return initialValue*depth, [], 1
 
         totalValue = 0
         goodValue = self.VALUE_MIN
@@ -86,23 +83,19 @@ class NeutreekoAI:
             if v > goodValue:
                 goodValue = v
                 goodMoves = [move]
-            if v == goodValue:
+            elif v == goodValue:
                 goodMoves.append(move)
             totalValue = totalValue + v
             count = count + c
         return totalValue, goodMoves, count
 
-
-
     def _enemyTurn(self, pieces, moves, depth):
         if depth == 0:
-            return self._evaluteValue(pieces), [], 1
+            return self._evaluteValue(pieces)*depth, [], 1
 
         initialValue = self._evaluteValue(pieces)
-        if initialValue == self.VALUE_WON:
-            return self.VALUE_MAX, [], 1
-        elif initialValue == self.VALUE_LOSE:
-            return self.VALUE_MIN, [], 1
+        if initialValue != self.VALUE_CONTINUE:
+            return initialValue*depth, [], 1
 
         totalValue = 0
         goodValue = self.VALUE_MAX
@@ -116,7 +109,7 @@ class NeutreekoAI:
             if v < goodValue:
                 goodValue = v
                 goodMoves = [move]
-            if v == goodValue:
+            elif v == goodValue:
                 goodMoves.append(move)
             totalValue = totalValue + v
             count = count + c
