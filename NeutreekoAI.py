@@ -89,8 +89,11 @@ class NeutreekoAI:
                 count += c
             totalCount += c
             if depth == self.DEPTH:
-                print("{0}:{1} / {2} hands are read".format(move, v, totalCount))
-        return goodValue / count, goodMoves, totalCount
+                print("{0}:{1} {2} / {3} hands are read".format(move, v, totalCount))
+        if depth == self.DEPTH:
+            return goodValue, goodMoves, totalCount
+        else:
+            return goodValue/count, goodMoves, totalCount
 
     def _enemyTurn(self, pieces, moves, depth):
         if depth == 0:
@@ -118,7 +121,10 @@ class NeutreekoAI:
                 goodMoves.append(move)
                 count += c
             totalCount +=  c
-        return goodValue/count, goodMoves, totalCount
+        if depth == self.DEPTH:
+            return goodValue, goodMoves, totalCount
+        else:
+            return goodValue/count, goodMoves, totalCount
 
     def _evaluteValue(self, pieces):
         if Neu.Board.isWon(pieces, self._playerColor):
