@@ -89,7 +89,7 @@ class NeutreekoAI:
                 count += c
             totalCount += c
             if depth == self.DEPTH:
-                print("{0}:{1} {2} / {3} hands are read".format(move, v, totalCount))
+                print("{0} {1} / {2} hands are read".format(move, v, totalCount))
         if depth == self.DEPTH:
             return goodValue, goodMoves, totalCount
         else:
