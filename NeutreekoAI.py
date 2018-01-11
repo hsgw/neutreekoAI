@@ -5,8 +5,8 @@ import random, time
 class NeutreekoAI:
     VALUE_MAX = 1000
     VALUE_MIN = -1000
-    VALUE_WON = +10
-    VALUE_LOSE = -10
+    VALUE_WON = +999
+    VALUE_LOSE = -999
     VALUE_CONTINUE = 0
     DEPTH = 5
 
@@ -65,55 +65,60 @@ class NeutreekoAI:
 
     def _myTurn(self, pieces, moves, depth):
         if depth == 0:
-            return self._evaluteValue(pieces)*depth, [], 1
+            return self._evaluteValue(pieces), [], 1
 
         initialValue = self._evaluteValue(pieces)
         if initialValue != self.VALUE_CONTINUE:
-            return initialValue*depth, [], 1
+            return initialValue, [], 1
 
-        totalValue = 0
         goodValue = self.VALUE_MIN
         goodMoves = []
         count = 0
+        totalCount = 0
+
         for move in moves:
             tempPieces = Neu.Board.applyMove(pieces, self._playerColor, move[0], move[1])
             tempMoves = Neu.Board.getLegalMoveDirections(tempPieces, self._enemyColor)
             v, m, c = self._enemyTurn(tempPieces, tempMoves, depth - 1)
-            # print("my: {0},{1}".format(v,m))
             if v > goodValue:
                 goodValue = v
                 goodMoves = [move]
+                count = c
             elif v == goodValue:
                 goodMoves.append(move)
-            totalValue = totalValue + v
-            count = count + c
-        return totalValue, goodMoves, count
+                count += c
+            totalCount += c
+            if depth == self.DEPTH:
+                print("{0}:{1} / {2} hands are read".format(move, v, totalCount))
+        return goodValue / count, goodMoves, totalCount
 
     def _enemyTurn(self, pieces, moves, depth):
         if depth == 0:
-            return self._evaluteValue(pieces)*depth, [], 1
+            return self._evaluteValue(pieces), [], 1
 
         initialValue = self._evaluteValue(pieces)
         if initialValue != self.VALUE_CONTINUE:
-            return initialValue*depth, [], 1
+            return initialValue, [], 1
 
         totalValue = 0
         goodValue = self.VALUE_MAX
         goodMoves = []
         count = 0
+        totalCount = 0
+
         for move in moves:
             tempPieces = Neu.Board.applyMove(pieces, self._enemyColor, move[0], move[1])
             tempMoves = Neu.Board.getLegalMoveDirections(tempPieces, self._playerColor)
             v, m, c = self._myTurn(tempPieces, tempMoves, depth - 1)
-            # print("enemy: {0},{1}".format(v, m))
             if v < goodValue:
                 goodValue = v
                 goodMoves = [move]
+                count = c
             elif v == goodValue:
                 goodMoves.append(move)
-            totalValue = totalValue + v
-            count = count + c
-        return totalValue, goodMoves, count
+                count += c
+            totalCount +=  c
+        return goodValue/count, goodMoves, totalCount
 
     def _evaluteValue(self, pieces):
         if Neu.Board.isWon(pieces, self._playerColor):
