@@ -2,7 +2,6 @@
 import NeutreekoAI
 
 from enum import IntEnum
-from copy import deepcopy
 
 class PlayerColor(IntEnum):
     BLACK = 0
@@ -40,34 +39,43 @@ class Board:
 
     @staticmethod
     def getLegalMoveDirections(pieces, playerColor):
-        ret = []
+        ret = [None] * 24
+        index = 0
         myPieces = Pieces.getPlayerPieces(pieces, playerColor)
         for i, (y,x) in enumerate(myPieces):
             # up = 0
             if not y == 0 and (y-1, x) not in pieces:
-                ret.append((i, 0))
+                ret[index] = (i, 0)
+                index += 1
             # up-right = 1
             if not y == 0 and not x == 4 and (y-1, x+1) not in pieces:
-                ret.append((i, 1))
+                ret[index] = (i, 1)
+                index += 1
             # right = 2
             if not x == 4 and (y, x+1) not in pieces:
-                ret.append((i, 2))
+                ret[index] = (i, 2)
+                index += 1
             # right-down = 3
             if not y == 4 and not x == 4 and (y+1, x+1) not in pieces:
-                ret.append((i, 3))
+                ret[index] = (i, 3)
+                index += 1
             # down = 4
             if not y == 4 and (y+1, x) not in pieces:
-                ret.append((i, 4))
+                ret[index] = (i, 4)
+                index += 1
             # down-left = 5
             if not x == 0 and not y == 4 and (y+1,x-1) not in pieces:
-                ret.append((i, 5))
+                ret[index] = (i, 5)
+                index += 1
             # left = 6
             if not x == 0 and (y,x-1) not in pieces:
-                ret.append((i, 6))
+                ret[index] = (i, 6)
+                index += 1
             # up-left = 7
             if not x == 0 and not y == 0 and (y-1,x-1) not in pieces:
-                ret.append((i, 7))
-        return ret
+                ret[index] = (i, 7)
+                index += 1
+        return ret[:index]
 
     @staticmethod
     def applyMove(pieces, playerColor, movePieceNo, direction):
@@ -141,7 +149,8 @@ class Board:
         else:
             pass
 
-        ret = deepcopy(pieces)
+        # ret = deepcopy(pieces)
+        ret = pieces[:]
         ret[playerColor.value*3+movePieceNo] = distPos
         return ret
 
@@ -226,7 +235,8 @@ class Game:
                 print("Can't move {0} to {1}!".format(movePieceNo, direction))
 
 
-    def start(self):
+    def startAIvsHuman(self):
+        self._currentPlayerColor = PlayerColor.BLACK
         self._history = []
         self.isEnd = False
         self._currentPieces = Pieces.startPos()
@@ -264,6 +274,59 @@ class Game:
             else:
                 self._currentPlayerColor = PlayerColor.getEnemyColor(self._currentPlayerColor)
 
+    def startAIvsAI(self, aiA, aiB):
+        self._currentPlayerColor = PlayerColor.BLACK
+        self._history = []
+        self.isEnd = False
+        self._currentPieces = Pieces.startPos()
+        turnCount = 0
+        print("================================\n")
+
+        cpuA = aiA(PlayerColor.BLACK)
+        cpuB = aiB(PlayerColor.WHITE)
+
+        print("Start Game\n\n")
+        while not self.isEnd:
+            turnCount += 1
+            print("TURN: {}".format(turnCount))
+            Board.print(self._currentPieces)
+            if self._currentPlayerColor == PlayerColor.BLACK:
+                pieceNo, direction = cpuA.doTurn(self._currentPieces)
+            else:
+                pieceNo, direction = cpuB.doTurn(self._currentPieces)
+
+            self._history.append((self._currentPieces[pieceNo + self._currentPlayerColor.value * 3], direction))
+            self._currentPieces = Board.applyMove(self._currentPieces, self._currentPlayerColor, pieceNo, direction)
+            print("{}\n".format(self._history[-1]))
+
+            if Board.isWon(self._currentPieces, self._currentPlayerColor):
+                self.isEnd = True
+                Board.print(self._currentPieces)
+                if PlayerColor.BLACK == self._currentPlayerColor:
+                    print("BLACK Win!")
+                else:
+                    print("WHITE Win!")
+                print("History:\n{}".format(self._history))
+                return self._currentPlayerColor
+            else:
+                self._currentPlayerColor = PlayerColor.getEnemyColor(self._currentPlayerColor)
+                if turnCount > 50:
+                    return -1
+
+
 if __name__ == '__main__':
+    blackWin = 0
+    whiteWin = 0
+    draw = 0
     game = Game()
-    game.start()
+    game.startAIvsHuman()
+    # for i in range(32):
+    #     print("GAME {}".format(i))
+    #     ret = game.startAIvsAI(NeutreekoAI.NeutreekoAI, NeutreekoAI.NeutreekoAI)
+    #     if ret == 0:
+    #         blackWin += 1
+    #     elif ret == 1:
+    #         whiteWin += 1
+    #     else:
+    #         draw += 1
+    # print("BLACK: {0}, WHITE: {1}, DRAW: {2}".format(blackWin, whiteWin, draw))

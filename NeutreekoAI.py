@@ -103,7 +103,6 @@ class NeutreekoAI:
         if initialValue != self.VALUE_CONTINUE:
             return initialValue, [], 1
 
-        totalValue = 0
         goodValue = self.VALUE_MAX
         goodMoves = []
         count = 0
